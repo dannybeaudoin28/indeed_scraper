@@ -3,7 +3,6 @@ from openai import OpenAI
 
 # Replace 'your-api-key' with your actual OpenAI API key
 
-client = OpenAI(api_key=api_key)
 
 # Prompt the user for content
 user_prompt = input("Enter your prompt: ")
