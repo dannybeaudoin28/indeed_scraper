@@ -13,6 +13,10 @@ def init():
     # print_card_details(jobs)
     for job in jobs:
         get_job_desc(job)
+        #TODO   assign result of get_job_desc to list
+        #       run get_chat_gpt_response(job)
+        #       make new directory named job['title']
+        #       save job['link'] as well as new text document containing gpt response
 
 def initialize():
     # Configure Chrome options for headless mode
@@ -109,11 +113,17 @@ def get_job_desc(job):
     
     # Retrieve each p element (data) in job_data
     for job in job_data:
-        desc = job.find('div', class_='jobsearch-JobComponent-description').get_text(strip=True)
-        data.append({
-            'description': desc,
-        })
-    return data      
-        
+        print(job.find('div', class_='jobsearch-JobComponent-description').get_text(strip=True))
+        # desc = job.find('div', class_='jobsearch-JobComponent-description').get_text(strip=True)
+    #     data.append({
+    #         'description': desc,
+    #     })
+    # return data      
+ 
+def get_chat_gpt_response():
+    #TODO   Connect to Chat Gpt API 
+    #       Input job advertisement desc, and users original resume
+    #       return httpResponse text of chatGPT result 
+    return False      
          
 init()
