@@ -13,7 +13,7 @@ def get_old_resume_info():
     return (old_resume, header_text)
 
 def create_resume(content, file_name, old_header):
-    save_url = "assets\\" + file_name + ".docx"
+    save_path = "assets\\Beaudoin, Danny - " + file_name + ".docx"
      
     document = Document()
     section = document.sections[0]
@@ -23,4 +23,4 @@ def create_resume(content, file_name, old_header):
     paragraph.text = old_header
     
     document.add_paragraph(content)
-    document.save(save_url)
+    document.save(save_path)
