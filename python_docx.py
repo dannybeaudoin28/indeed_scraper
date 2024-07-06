@@ -12,8 +12,8 @@ def get_old_resume_info():
             
     return (old_resume, header_text)
 
-def create_resume(content, file_name, old_header):
-    save_path = "assets\\Beaudoin, Danny - " + file_name + ".docx"
+def create_resume(content, file_name, old_header, dir_name):
+    save_path = "assets\\" + dir_name + "\\Beaudoin, Danny - " + file_name + ".docx"
      
     document = Document()
     section = document.sections[0]

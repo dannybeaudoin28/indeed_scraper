@@ -8,6 +8,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 import time
 
+import os
+
 from open_api import get_gpt_response
 from python_docx import create_resume, get_old_resume_info
 
@@ -31,9 +33,11 @@ def init():
     for job in jobs:
         job_details = get_job_details(job, chrome_options)
         gpt_res = get_gpt_response(job_details[0], old_resume)
-        create_resume(gpt_res, job_details[1], old_header)
-        #TODO: getGPT Response
-        #      create resume
+        dir_name = job_details[1] # [:12] substring TODO: Must modify title to strip it of unusable characters
+        create_dir(dir_name)
+        create_resume(gpt_res, job_details[1], old_header, dir_name)
+        create_url_file(dir_name, job["link"])
+        
 
 def get_jobs(options):
     search_job_title = input("What position would you like to search for? ")
@@ -119,5 +123,18 @@ def get_job_details(job, options):
         desc = job.find('div', class_='jobsearch-JobComponent-description').get_text(strip=True)
     
     return (desc, job_title)
+
+def create_dir(dir_name):
+    parent_dir = "C:/Users/jacki/Desktop/Apps/ResumeBuilder/assets/"
+    path = os.path.join(parent_dir, dir_name)
+    os.mkdir(path)
+    
+def create_url_file(dir_name, url):
+    # base_path = "assets"
+    full_path = "assets/" + dir_name + "/url.txt"
+    f = open(full_path, "x")
+    f.write(url)
+    f.close()
+    
              
 init()
