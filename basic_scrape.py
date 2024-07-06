@@ -8,34 +8,49 @@ from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 import time
 
+from open_api import get_gpt_response
+from python_docx import create_resume, get_old_resume_info
+
 def init():
-    jobs = initialize()
+    old_resume_info = get_old_resume_info()
+    old_resume = old_resume_info[0]
+    old_header = old_resume_info[1]
+
+    user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--window-size=1920,1200")
+    chrome_options.add_argument('--disable-gpu')  # Disable GPU acceleration (required if running on Windows)
+    chrome_options.add_argument('--no-sandbox')  # Bypass OS security model (necessary for some environments)
+    chrome_options.add_argument('--disable-dev-shm-usage')  # Overcome limited resource problems
+    chrome_options.add_argument(f'user-agent={user_agent}')
+    
+    jobs = get_jobs(chrome_options)
     # print_card_details(jobs)
     for job in jobs:
-        get_job_desc(job)
-        #TODO   assign result of get_job_desc to list
-        #       run get_chat_gpt_response(job)
-        #       make new directory named job['title']
-        #       save job['link'] as well as new text document containing gpt response
+        job_details = get_job_details(job, chrome_options)
+        gpt_res = get_gpt_response(job_details[0], old_resume)
+        create_resume(gpt_res, job_details[1], old_header)
+        #TODO: getGPT Response
+        #      create resume
 
-def initialize():
-    # Configure Chrome options for headless mode
-    chrome_options = Options()
-    chrome_options.add_argument('--headless')  # Comment out this line to see the browser window
-    chrome_options.add_argument('--disable-gpu')  # Required if running on Windows
-
+def get_jobs(options):
+    search_job_title = input("What position would you like to search for? ")
     # Initialize the WebDriver
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
     # URL of the Indeed search page
-    url = 'https://ca.indeed.com/jobs?q=programmer&l=Remote&jt=subcontract&ts=1719700838600&pts=1719322684741&rbsalmin=0&rbsalmax=0&sc=0kf%3Ajt%28subcontract%29%3B&rq=1&from=HPRecent&rsIdx=0&vjk=21ee3928298d4ebf'
+    # url = 'https://ca.indeed.com/jobs?q=programmer&l=Remote&jt=subcontract&ts=1719700838600&pts=1719322684741&rbsalmin=0&rbsalmax=0&sc=0kf%3Ajt%28subcontract%29%3B&rq=1&from=HPRecent&rsIdx=0&vjk=21ee3928298d4ebf'
+    # url = 'https://ca.indeed.com/jobs?q=Programmer&l=Kingston%2C+ON'
+    url = 'https://ca.indeed.com/jobs?q=' + search_job_title + '&l=Kingston'
+    
+    print(f"You are using the following URL: {url}")
 
     # Open the URL
     driver.get(url)
 
-    # Wait for the page to load completely
-    wait = WebDriverWait(driver, 3)
-    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'slider_item')))
+    wait = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.CLASS_NAME, 'slider_item')))
 
     # Scroll to load more jobs (if needed)
     for _ in range(5):  # Adjust the range for more scrolling
@@ -83,16 +98,16 @@ def print_card_details(jobs):
         print('-' * 40)
         
         
-def get_job_desc(job):
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+def get_job_details(job, options):
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     #This line should be grabbing the results of each individual link from the indeed homesearch page
     job_link = job['link']  # Retrieve the 'link' key from the job dictionary
-    # print("Link = " + job_link)
-    
+    job_title = job['title'] # Retrieve title key
+        
     driver.get(job_link)
 
     # Wait for the page to load completely
-    wait = WebDriverWait(driver, 3)
+    wait = WebDriverWait(driver, 1)
     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'fastviewjob')))
 
     # Scroll to load more jobs (if needed)
@@ -109,21 +124,12 @@ def get_job_desc(job):
     # Find all job cards
     job_data = soup.find_all('div', class_='fastviewjob')
     
-    data = []
+    desc = ""
     
     # Retrieve each p element (data) in job_data
     for job in job_data:
-        print(job.find('div', class_='jobsearch-JobComponent-description').get_text(strip=True))
-        # desc = job.find('div', class_='jobsearch-JobComponent-description').get_text(strip=True)
-    #     data.append({
-    #         'description': desc,
-    #     })
-    # return data      
- 
-def get_chat_gpt_response():
-    #TODO   Connect to Chat Gpt API 
-    #       Input job advertisement desc, and users original resume
-    #       return httpResponse text of chatGPT result 
-    return False      
-         
+        desc = job.find('div', class_='jobsearch-JobComponent-description').get_text(strip=True)
+    
+    return (desc, job_title)
+             
 init()
