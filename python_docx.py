@@ -8,7 +8,6 @@ def get_old_resume_info():
     old_resume = ""
 
     for text in document.paragraphs:
-        # print(text.text)
         old_resume += text.text
             
     return (old_resume, header_text)

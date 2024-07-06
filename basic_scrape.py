@@ -37,17 +37,15 @@ def init():
 
 def get_jobs(options):
     search_job_title = input("What position would you like to search for? ")
-    # Initialize the WebDriver
+
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
-    # URL of the Indeed search page
     # url = 'https://ca.indeed.com/jobs?q=programmer&l=Remote&jt=subcontract&ts=1719700838600&pts=1719322684741&rbsalmin=0&rbsalmax=0&sc=0kf%3Ajt%28subcontract%29%3B&rq=1&from=HPRecent&rsIdx=0&vjk=21ee3928298d4ebf'
     # url = 'https://ca.indeed.com/jobs?q=Programmer&l=Kingston%2C+ON'
     url = 'https://ca.indeed.com/jobs?q=' + search_job_title + '&l=Kingston'
     
     print(f"You are using the following URL: {url}")
 
-    # Open the URL
     driver.get(url)
 
     wait = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.CLASS_NAME, 'slider_item')))
@@ -55,15 +53,12 @@ def get_jobs(options):
     # Scroll to load more jobs (if needed)
     for _ in range(5):  # Adjust the range for more scrolling
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(2)  # Adjust sleep time as necessary
+        time.sleep(2)
 
-    # Parse the page source with BeautifulSoup
     soup = BeautifulSoup(driver.page_source, 'html.parser')
 
-    # Close the driver
     driver.quit()
 
-    # Find all job cards
     job_cards = soup.find_all('div', class_='slider_item')
     
     jobs = set_card_data(job_cards=job_cards)
@@ -72,7 +67,6 @@ def get_jobs(options):
     
     
 def set_card_data(job_cards):
-    # Extract job details
     jobs = []
     for card in job_cards:
         title = card.find('h2', class_='jobTitle').get_text(strip=True)
@@ -89,7 +83,6 @@ def set_card_data(job_cards):
 
 
 def print_card_details(jobs):
-# Print job details
     for job in jobs:
         print(f"Title: {job['title']}")
         print(f"Company: {job['company']}")
@@ -101,27 +94,22 @@ def print_card_details(jobs):
 def get_job_details(job, options):
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     #This line should be grabbing the results of each individual link from the indeed homesearch page
-    job_link = job['link']  # Retrieve the 'link' key from the job dictionary
-    job_title = job['title'] # Retrieve title key
+    job_link = job['link']  
+    job_title = job['title']
         
     driver.get(job_link)
 
-    # Wait for the page to load completely
     wait = WebDriverWait(driver, 1)
     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'fastviewjob')))
 
-    # Scroll to load more jobs (if needed)
-    for _ in range(5):  # Adjust the range for more scrolling
+    for _ in range(5):  
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(1)  # Adjust sleep time as necessary
+        time.sleep(1)  
 
-    # Parse the page source with BeautifulSoup
     soup = BeautifulSoup(driver.page_source, 'html.parser')
 
-    # Close the driver
     driver.quit()
 
-    # Find all job cards
     job_data = soup.find_all('div', class_='fastviewjob')
     
     desc = ""
