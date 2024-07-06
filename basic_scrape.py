@@ -23,30 +23,31 @@ def init():
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--window-size=1920,1200")
-    chrome_options.add_argument('--disable-gpu')  # Disable GPU acceleration (required if running on Windows)
-    chrome_options.add_argument('--no-sandbox')  # Bypass OS security model (necessary for some environments)
-    chrome_options.add_argument('--disable-dev-shm-usage')  # Overcome limited resource problems
+    chrome_options.add_argument('--disable-gpu')  
+    chrome_options.add_argument('--no-sandbox') 
+    chrome_options.add_argument('--disable-dev-shm-usage') 
     chrome_options.add_argument(f'user-agent={user_agent}')
     
     jobs = get_jobs(chrome_options)
-    # print_card_details(jobs)
+
     for job in jobs:
         job_details = get_job_details(job, chrome_options)
         gpt_res = get_gpt_response(job_details[0], old_resume)
         dir_name = job_details[1] # [:12] substring TODO: Must modify title to strip it of unusable characters
         create_dir(dir_name)
-        create_resume(gpt_res, job_details[1], old_header, dir_name)
-        create_url_file(dir_name, job["link"])
+        create_resume(gpt_res, job_details[1], old_header, dir_name)    
+        create_url_file(dir_name, job["link"])  #This creates a txt file named url.txt that contains the url for the user to manually apply to the job
         
 
 def get_jobs(options):
     search_job_title = input("What position would you like to search for? ")
+    search_location = input("Which city? Or type Remote: ")
 
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
     # url = 'https://ca.indeed.com/jobs?q=programmer&l=Remote&jt=subcontract&ts=1719700838600&pts=1719322684741&rbsalmin=0&rbsalmax=0&sc=0kf%3Ajt%28subcontract%29%3B&rq=1&from=HPRecent&rsIdx=0&vjk=21ee3928298d4ebf'
     # url = 'https://ca.indeed.com/jobs?q=Programmer&l=Kingston%2C+ON'
-    url = 'https://ca.indeed.com/jobs?q=' + search_job_title + '&l=Kingston'
+    url = 'https://ca.indeed.com/jobs?q=' + search_job_title + '&l=' + search_location
     
     print(f"You are using the following URL: {url}")
 
@@ -118,7 +119,7 @@ def get_job_details(job, options):
     
     desc = ""
     
-    # Retrieve each p element (data) in job_data
+    # Retrieve each p element (job) in job_data
     for job in job_data:
         desc = job.find('div', class_='jobsearch-JobComponent-description').get_text(strip=True)
     
@@ -130,11 +131,9 @@ def create_dir(dir_name):
     os.mkdir(path)
     
 def create_url_file(dir_name, url):
-    # base_path = "assets"
     full_path = "assets/" + dir_name + "/url.txt"
     f = open(full_path, "x")
     f.write(url)
-    f.close()
-    
+    f.close()    
              
 init()
